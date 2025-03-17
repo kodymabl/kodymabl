@@ -7,7 +7,6 @@ env:
   APP_ID: mUgiWjlxcDjWR91gljSKDw-a
   # TESTS_RUN_ID: VNTA4Ge3fogRJARtNloo1w-jr
   # DEPLOYMENT_EVENT_ID: iDjePKUbS2XYyDcZq5tmtA-v
-name: CI
 
 on: [push]
 
