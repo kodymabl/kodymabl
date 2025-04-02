@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 env:
-  MABL_API_KEY: FYVkpZA1kuht82EoV4QMyQ
+  MABL_API_KEY: w324ZBubCsKWKXDpw2OBUQ
   # GITHUB_TOKEN:
   # WORKSPACE_ID: GGivzErOOyHHUKY5t10J6Q-w
   ENV_ID: mLDQAyprr1WXmcnqsvPAvw-e
