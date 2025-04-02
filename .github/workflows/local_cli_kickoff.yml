@@ -23,6 +23,7 @@ jobs:
 
       - uses: mablhq/setup-mabl-cli@v1
         with:
+          workspace-id: RPVhi2GsYAgwdADaIG1sQw-w
           application-id: ${{ env.APP_ID }}
           environment-id: ${{ env.ENV_ID }}
         env:
