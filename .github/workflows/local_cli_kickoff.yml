@@ -28,5 +28,7 @@ jobs:
         env:
           MABL_API_KEY: ${{ env.MABL_API_KEY }}
 
+      - name: Auth login
+        run: mabl auth activate-key ${{ env.MABL_API_KEY }}
       - name: Run check sandbox script
         run: mabl tests run --id bLsrFhxfczxGSeCqZux8jw-j --headless true --environment-id mLDQAyprr1WXmcnqsvPAvw-e 
