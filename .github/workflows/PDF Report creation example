@@ -1,0 +1,143 @@
+########## Sefe POC Deploy and Create PDF Report ###########
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Functional test deployment
+        id: mabl-test-deployment
+        uses: mablhq/github-run-tests-action@v1.13.0
+        continue-on-error: true
+        env:
+          MABL_API_KEY: ${{ secrets.MABL_CICD_KEY }}
+        with:
+          application-id: ${{ env.APP_ID }}
+          environment-id: ${{ env.ENV_ID }}
+          browser-types: |
+            chrome
+          plan-labels: |
+            gitActions
+
+      - name: Set deployment ID
+        run: echo "DEPLOYMENT_EVENT_ID=${{ steps.mabl-test-deployment.outputs.mabl-deployment-id }}" >> $GITHUB_ENV
+
+      - name: Get detailed execution results
+        run: |
+          # Get raw response and store as variable
+          curl -s -X GET \
+            "https://api.mabl.com/execution/result/event/${{ env.DEPLOYMENT_EVENT_ID }}" \
+            -H "Accept: application/json" \
+            -H "Authorization: Basic ${{ secrets.MABL_EDITOR_API_BASE64 }}" \
+            -o response.json
+
+          # Create category-based variables with safe delimiters
+          {
+            echo "PLAN_EXECUTION<<END_OF_JSON"
+            jq -c .plan_execution_metrics response.json
+            echo "END_OF_JSON"
+            
+            echo "JOURNEY_METRICS<<END_OF_JSON"
+            jq -c .journey_execution_metrics response.json
+            echo "END_OF_JSON"
+            
+            echo "EVENT_STATUS<<END_OF_JSON"
+            jq -c .event_status response.json
+            echo "END_OF_JSON"
+            
+            echo "EXECUTION_DETAILS<<END_OF_JSON"
+            jq -c .executions[0] response.json
+            echo "END_OF_JSON"
+            
+            echo "FAILURE_DETAILS<<END_OF_JSON"
+            jq -c '.executions[0].journey_executions[0].failure_summary' response.json
+            echo "END_OF_JSON"
+            
+            echo "FULL_RESPONSE<<END_OF_JSON"
+            jq -c . response.json
+            echo "END_OF_JSON"
+          } >> $GITHUB_ENV
+
+      # Create report
+      - name: Create report directory
+        run: mkdir -p reports
+
+      - name: Generate Markdown content
+        run: |
+          cat << EOF > reports/report.md
+          # Mabl Test Report
+          
+          ## Key Metrics
+          ### Plan Execution
+          \`\`\`json
+          $(echo "$PLAN_EXECUTION" | jq .)
+          \`\`\`
+          
+          ### Journey Execution
+          \`\`\`json
+          $(echo "$JOURNEY_METRICS" | jq .)
+          \`\`\`
+          
+          ## Event Status
+          \`\`\`json
+          $(echo "$EVENT_STATUS" | jq .)
+          \`\`\`
+          
+          ## Execution Details
+          \`\`\`json
+          $(echo "$EXECUTION_DETAILS" | jq .)
+          \`\`\`
+          
+          ## Failure Analysis
+          \`\`\`json
+          $(echo "$FAILURE_DETAILS" | jq .)
+          \`\`\`
+          
+          ## Full API Response
+          \`\`\`json
+          $(echo "$FULL_RESPONSE" | jq .)
+          \`\`\`
+          EOF
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          # Consolidated package installation
+          sudo apt-get install -y jq pandoc texlive-xetex texlive-latex-base texlive-fonts-recommended texlive-latex-extra
+
+      - name: Convert to PDF
+        run: |
+          pandoc reports/report.md \
+            -o reports/mabl_report.pdf \
+            -V geometry:margin=1in \
+            -V fontsize:12pt \
+            -V mainfont:DejaVuSans \
+            --pdf-engine=xelatex
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mabl-test-report
+          path: reports/mabl_report.pdf
+          retention-days: 30
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: mabl-report-${{ github.run_id }}
+          name: "Mabl Test Report - ${{ env.STATUS }} (Run ${{ github.run_number }})"
+          files: |
+            reports/mabl_report.pdf
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+########## Sefe POC Deploy and Create PDF Report ##########
