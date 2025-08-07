@@ -1,4 +1,3 @@
-########## Sefe POC Deploy and Create PDF Report ###########
 on:
   push:
     branches:
@@ -140,4 +139,3 @@ jobs:
           prerelease: false
           generate_release_notes: true
 
-########## Sefe POC Deploy and Create PDF Report ##########
