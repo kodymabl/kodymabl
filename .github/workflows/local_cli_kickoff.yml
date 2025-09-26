@@ -1,10 +1,10 @@
 # This is a basic workflow to help you get started with Actions
 env:
-  MABL_API_KEY: w324ZBubCsKWKXDpw2OBUQ
+  MABL_API_KEY: XX
   # GITHUB_TOKEN:
   # WORKSPACE_ID: GGivzErOOyHHUKY5t10J6Q-w
-  ENV_ID: mLDQAyprr1WXmcnqsvPAvw-e
-  APP_ID: mUgiWjlxcDjWR91gljSKDw-a
+  ENV_ID: XX
+  APP_ID: XX
   # TESTS_RUN_ID: VNTA4Ge3fogRJARtNloo1w-jr
   # DEPLOYMENT_EVENT_ID: iDjePKUbS2XYyDcZq5tmtA-v
 
@@ -37,4 +37,4 @@ jobs:
       #  run: mabl auth activate-key ${{ env.MABL_API_KEY }}
 
       - name: Run check sandbox script
-        run: mabl auth activate-key ${{ env.MABL_API_KEY }} && mabl tests run --id bLsrFhxfczxGSeCqZux8jw-j --headless true
+        run: mabl tests run --id bLsrFhxfczxGSeCqZux8jw-j --headless true
